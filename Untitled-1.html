@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="fil">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Enrollment</title>
+  <style>
+    :root {
+      --blue: #1d4ed8;
+      --bg: #f3f4f6;
+      --ok: #15803d;
+      --bad: #b91c1c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      color: #111827;
+    }
+
+    header {
+      background: var(--blue);
+      color: #fff;
+      padding: 16px 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    main {
+      max-width: 820px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    .steps {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .steps div {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 13px;
+      background: #e5e7eb;
+      border-radius: 6px;
+    }
+
+    .steps div.active {
+      background: var(--blue);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .steps div.done {
+      background: #bfdbfe;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin: 12px 0 4px;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width:560px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        font-size: 11px;
+      }
+    }
+
+    .btns {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 0;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    tr.sel {
+      background: #dbeafe;
+    }
+
+    tr.full {
+      opacity: .5;
+    }
+
+    .msg {
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .msg.err {
+      background: #fee2e2;
+      color: var(--bad);
+    }
+
+    .msg.ok {
+      background: #dcfce7;
+      color: var(--ok);
+    }
+
+    .total {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: right;
+      margin-top: 12px;
+    }
+
+    .slot-low {
+      color: var(--bad);
+      font-weight: 600;
+    }
+
+    .subject-table-scroll {
+      max-width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .subject-table-scroll:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .subject-table {
+      min-width: 680px;
+    }
+
+    .table-scroll-hint {
+      margin: 0 0 8px;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .file-disclosure {
+      display: block;
+      margin-top: 4px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .cor-document {
+      background: #fff;
+      color: #0f172a;
+      border: 1px solid #dfe7f3;
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      padding: 28px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .cor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      border-bottom: 2px solid #dfe7f3;
+      padding-bottom: 18px;
+      margin-bottom: 20px;
+    }
+
+    .cor-school {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 6px;
+    }
+
+    .cor-header h2 {
+      margin: 0;
+      font-size: clamp(22px, 2.4vw, 34px);
+      line-height: 1.2;
+    }
+
+    .status-badge {
+      background: #dbeafe;
+      color: #1e3a8a;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .cor-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .cor-meta > div {
+      background: #f8fbff;
+      border: 1px solid #dfe7f3;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .cor-meta span {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .cor-meta strong {
+      font-size: 15px;
+      word-break: break-word;
+    }
+
+    .cor-notice {
+      background: #fff7ed;
+      color: #9a4d00;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      border-radius: 8px;
+    }
+
+    .cor-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .cor-panel {
+      background: #fff;
+      border: 1px solid #dfe7f3;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .cor-panel h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+      color: var(--blue);
+    }
+
+    dl {
+      margin: 0;
+    }
+
+    dl > div {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    dl > div:last-child {
+      border-bottom: none;
+    }
+
+    dt {
+      font-weight: 700;
+      color: #475569;
+    }
+
+    dd {
+      margin: 0;
+      word-break: break-word;
+    }
+
+    .cor-table {
+      margin-top: 8px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cor-table th,
+    .cor-table td {
+      border-bottom: 1px solid #dfe7f3;
+      padding: 10px 8px;
+      vertical-align: top;
+    }
+
+    .cor-table th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .cor-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 680px) {
+      .cor-header, .cor-meta, .cor-grid {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .cor-header {
+        gap: 10px;
+        padding-bottom: 14px;
+      }
+
+      .status-badge {
+        white-space: normal;
+      }
+
+      dl > div {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+
+      .cor-actions {
+        justify-content: stretch;
+        flex-direction: column;
+      }
+
+      .cor-actions button {
+        width: 100%;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 12mm;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      body > :not(main),
+      main > :not(#corPreview),
+      .cor-actions {
+        display: none !important;
+      }
+
+      main {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #corPreview:not(.hidden) {
+        display: block !important;
+      }
+
+      .cor-document {
+        max-width: none;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+    }  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🎓 Online Enrollment — SY 2026-2027, 1st Sem</h1>
+  </header>
+  <main>
+    <div class="steps" id="steps">
+      <div>1. Personal Info</div>
+      <div>2. Subjects</div>
+      <div>3. Requirements</div>
+      <div>4. Payment</div>
+      <div>5. Confirm</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <section class="card step" id="step1">
+      <h2>Personal Information</h2>
+      <div class="row">
+        <div><label>First Name *</label><input id="fname"></div>
+        <div><label>Last Name *</label><input id="lname"></div>
+      </div>
+      <div class="row">
+        <div><label>Birthdate *</label><input type="date" id="bdate"></div>
+        <div><label>Sex *</label>
+          <select id="sex">
+            <option value="">Pumili</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label>Email *</label><input type="email" id="email"></div>
+        <div><label>Contact No. *</label><input id="contact" placeholder="09XXXXXXXXX"></div>
+      </div>
+      <label>Address</label><input id="address">
+      <div class="row">
+        <div><label>Program *</label>
+          <select id="program">
+            <option value="">Pumili</option>
+            <option>BSIT</option>
+            <option>BSED</option>
+            <option>BSN</option>
+            <option>BSA</option>
+            <option>BSCS</option>
+            <option>BSP</option>
+            <option>BSSW</option>
+            <option>BSBA</option>
+          </select>
+        </div>
+        <div><label>Year Level *</label>
+          <select id="year">
+            <option value="">Pumili</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+          </select>
+        </div>
+      </div>
+      <div class="msg err hidden" id="err1"></div>
+      <div class="btns"><span></span><button class="primary" onclick="next(1)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="card step hidden" id="step2">
+      <h2>Piliin ang Subjects</h2>
+      <p id="subjectProgram" aria-live="polite"></p>
+      <p>Sample subjects only — confirm the official curriculum with the registrar.</p>
+      <p class="table-scroll-hint" id="subjectTableHint">On a narrow screen, scroll this table sideways to see schedules and slot availability.</p>
+      <div class="subject-table-scroll" role="region" aria-label="Available subjects and remaining slots" aria-describedby="subjectTableHint" tabindex="0">
+        <table class="subject-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Code</th>
+              <th>Subject</th>
+              <th>Units</th>
+              <th>Schedule</th>
+              <th>Slots</th>
+            </tr>
+          </thead>
+          <tbody id="subjectBody"></tbody>
+        </table>
+      </div>
+      <div class="total" id="totalUnits">Total: 0 units</div>
+      <div class="msg err hidden" id="err2"></div>
+      <div class="btns"><button class="secondary" onclick="back(2)">← Bumalik</button><button class="primary"
+          onclick="next(2)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="card step hidden" id="step3">
+      <h2>I-upload ang Requirements</h2>
+      <label>Certificate of Registration (COR) *</label><input type="file" id="cor" accept="image/*,.pdf" required>
+      <div class="msg err hidden" id="err3"></div>
+      <div class="btns"><button class="secondary" onclick="back(3)">← Bumalik</button><button class="primary"
+          onclick="next(3)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="card step hidden" id="step4">
+      <h2>Payment</h2>
+      <div class="total" id="amountDue" style="text-align:left">Amount Due: ₱0.00</div>
+      <label>Paraan ng Bayad *</label>
+      <select id="method">
+        <option value="">Pumili</option>
+        <option>GCash</option>
+        <option>Maya</option>
+        <option>Bank Transfer</option>
+        <option>Cash (sa Cashier)</option>
+      </select>
+      <label>Reference No.</label><input id="refno">
+      <label>Proof of Payment</label><input type="file" id="proof" accept="image/*,.pdf">
+      <div class="msg err hidden" id="err4"></div>
+      <div class="btns"><button class="secondary" onclick="back(4)">← Bumalik</button><button class="primary"
+          onclick="next(4)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 5 -->
+    <section class="card step hidden" id="step5">
+      <h2>Review at Confirm</h2>
+      <div id="summary"></div>
+      <div class="btns"><button class="secondary" onclick="back(5)">← Bumalik</button><button class="primary"
+          onclick="submitEnroll()">I-submit ang Enrollment</button></div>
+      <div class="msg ok hidden" id="done"></div>
+    </section>
+  
+        <section id="corPreview" class="hidden" aria-live="polite">
+      <div class="cor-document">
+        <div class="cor-header">
+          <div>
+            <div class="cor-school">Christ the King College</div>
+            <h2>Certificate of Registration (COR) / Enrollment Confirmation</h2>
+          </div>
+          <div class="status-badge">Student-generated preview</div>
+        </div>
+
+        <div class="cor-meta">
+          <div><span>Local Preview Reference</span><strong id="corReference">-</strong></div>
+          <div><span>Confirmation Date</span><strong id="corTimestamp">-</strong></div>
+        </div>
+
+        <div class="cor-notice">Student-generated preview only — this standalone demo records a local confirmation and does not send enrollment data to a backend. Registrar review begins only after official submission through the school. This is not an official COR; only the Registrar can verify and issue one.</div>
+
+        <div class="cor-grid">
+          <div class="cor-panel">
+            <h3>Student Information</h3>
+            <dl>
+              <div><dt>Full Name</dt><dd id="corName">-</dd></div>
+              <div><dt>Birthdate</dt><dd id="corBirthdate">-</dd></div>
+              <div><dt>Sex</dt><dd id="corSex">-</dd></div>
+              <div><dt>Email</dt><dd id="corEmail">-</dd></div>
+              <div><dt>Phone</dt><dd id="corPhone">-</dd></div>
+              <div><dt>Address</dt><dd id="corAddress">-</dd></div>
+            </dl>
+          </div>
+
+          <div class="cor-panel">
+            <h3>Academic Information</h3>
+            <dl>
+              <div><dt>Program</dt><dd id="corProgram">-</dd></div>
+              <div><dt>Year Level</dt><dd id="corYear">-</dd></div>
+              <div><dt>Status</dt><dd id="corStatus">Submitted — awaiting registrar review</dd></div>
+              <div><dt>Total Units</dt><dd id="corUnits">-</dd></div>
+              <div><dt>Amount Due</dt><dd id="corAmount">-</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="cor-panel">
+          <h3>Selected Subjects</h3>
+          <table class="cor-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Subject</th>
+                <th>Units</th>
+                <th>Schedule</th>
+              </tr>
+            </thead>
+            <tbody id="corSubjectsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="cor-grid">
+          <div class="cor-panel">
+            <h3>Requirements</h3>
+            <dl>
+              <div><dt>COR Upload</dt><dd><span id="corFile">-</span><small class="file-disclosure">Selected uploads are represented by filenames only; files are not submitted or stored in this demo.</small></dd></div>
+            </dl>
+          </div>
+
+          <div class="cor-panel">
+            <h3>Payment</h3>
+            <dl>
+              <div><dt>Method</dt><dd id="corPaymentMethod">-</dd></div>
+              <div><dt>Reference</dt><dd id="corPaymentRef">-</dd></div>
+              <div><dt>Proof of Payment</dt><dd><span id="corProofFile">-</span><small class="file-disclosure">Selected uploads are represented by filenames only; files are not submitted or stored in this demo.</small></dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="cor-actions">
+          <button class="primary" type="button" id="printCorButton">Print / Save as PDF</button>
+          <button class="secondary" type="button" id="returnPortalButton">Return to enrollment form</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ---- SAMPLE DATA (palitan ng galing sa database/API) ----
+    const RATE_PER_UNIT = 800;   // halimbawa lang
+    const sectionsByProgram = {
+      BSIT: [
+        {id: 'BSIT-1', code: 'IT101', name: 'Introduction to Computing', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 5},
+        {id: 'BSIT-2', code: 'IT102', name: 'Computer Programming 1', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 12},
+        {id: 'BSIT-3', code: 'IT103', name: 'Web Systems and Technologies', units: 3, days: 'TTh', start: '10:00', end: '11:30', slots: 20},
+        {id: 'BSIT-4', code: 'IT104', name: 'Fundamentals of Information Systems', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSIT-5', code: 'IT105', name: 'Discrete Mathematics', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 30},
+      ],
+      BSED: [
+        {id: 'BSED-1', code: 'EDU101', name: 'The Teaching Profession', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 14},
+        {id: 'BSED-2', code: 'EDU102', name: 'Learner-Centered Teaching', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 10},
+        {id: 'BSED-3', code: 'EDU103', name: 'Child and Adolescent Development', units: 3, days: 'TTh', start: '10:00', end: '11:30', slots: 18},
+        {id: 'BSED-4', code: 'EDU104', name: 'Facilitating Learner-Centered Teaching', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSED-5', code: 'EDU105', name: 'Assessment of Student Learning', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 24},
+      ],
+      BSN: [
+        {id: 'BSN-1', code: 'NUR101', name: 'Theoretical Foundations in Nursing', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 8},
+        {id: 'BSN-2', code: 'NUR102', name: 'Health Assessment', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 12},
+        {id: 'BSN-3', code: 'NUR103', name: 'Anatomy and Physiology', units: 4, days: 'TTh', start: '10:00', end: '11:30', slots: 16},
+        {id: 'BSN-4', code: 'NUR104', name: 'Fundamentals of Nursing Practice', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSN-5', code: 'NUR105', name: 'Nutrition and Diet Therapy', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 20},
+      ],
+      BSA: [
+        {id: 'BSA-1', code: 'ACC101', name: 'Financial Accounting and Reporting 1', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 10},
+        {id: 'BSA-2', code: 'ACC102', name: 'Conceptual Framework and Accounting Standards', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 12},
+        {id: 'BSA-3', code: 'ACC103', name: 'Business Mathematics', units: 3, days: 'TTh', start: '10:00', end: '11:30', slots: 20},
+        {id: 'BSA-4', code: 'ACC104', name: 'Cost Accounting and Control', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSA-5', code: 'ACC105', name: 'Business Law and Regulations', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 25},
+      ],
+      BSCS: [
+        {id: 'BSCS-1', code: 'CSC101', name: 'Introduction to Computing', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 15},
+        {id: 'BSCS-2', code: 'CSC102', name: 'Programming Logic and Design', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 12},
+        {id: 'BSCS-3', code: 'CSC103', name: 'Discrete Structures', units: 3, days: 'TTh', start: '10:00', end: '11:30', slots: 20},
+        {id: 'BSCS-4', code: 'CSC104', name: 'Computer Organization', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSCS-5', code: 'CSC105', name: 'Data Structures and Algorithms', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 24},
+      ],
+      BSP: [
+        {id: 'BSP-1', code: 'PSY101', name: 'Introduction to Psychology', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 12},
+        {id: 'BSP-2', code: 'PSY102', name: 'Psychological Statistics', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 10},
+        {id: 'BSP-3', code: 'PSY103', name: 'Developmental Psychology', units: 3, days: 'TTh', start: '10:00', end: '11:30', slots: 18},
+        {id: 'BSP-4', code: 'PSY104', name: 'Theories of Personality', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSP-5', code: 'PSY105', name: 'Biological Psychology', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 22},
+      ],
+      BSSW: [
+        {id: 'BSSW-1', code: 'SWK101', name: 'Introduction to Social Work', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 14},
+        {id: 'BSSW-2', code: 'SWK102', name: 'Social Welfare Policies and Programs', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 12},
+        {id: 'BSSW-3', code: 'SWK103', name: 'Human Behavior and Social Environment', units: 3, days: 'TTh', start: '10:00', end: '11:30', slots: 18},
+        {id: 'BSSW-4', code: 'SWK104', name: 'Social Work Research 1', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSSW-5', code: 'SWK105', name: 'Social Work Practice with Individuals', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 20},
+      ],
+      BSBA: [
+        {id: 'BSBA-1', code: 'MGT101', name: 'Principles of Management', units: 3, days: 'MWF', start: '08:00', end: '09:00', slots: 16},
+        {id: 'BSBA-2', code: 'MGT102', name: 'Business Communication', units: 3, days: 'MWF', start: '08:30', end: '09:30', slots: 12},
+        {id: 'BSBA-3', code: 'MGT103', name: 'Marketing Principles', units: 3, days: 'TTh', start: '10:00', end: '11:30', slots: 20},
+        {id: 'BSBA-4', code: 'MGT104', name: 'Business Mathematics', units: 3, days: 'TTh', start: '13:00', end: '14:30', slots: 0},
+        {id: 'BSBA-5', code: 'MGT105', name: 'Operations Management', units: 3, days: 'MWF', start: '10:00', end: '11:00', slots: 26},
+      ],
+    };
+    let current = 1;
+    const selected = new Set();
+
+    const $ = id => document.getElementById(id);
+    const programSections = () => sectionsByProgram[$('program').value] || [];
+    const toMin = t => {const [h, m] = t.split(':').map(Number); return h * 60 + m;};
+    const dayList = d => d.replace('Th', 'R').split('');
+
+    function conflicts(a, b) {
+      const shareDay = dayList(a.days).some(x => dayList(b.days).includes(x));
+      return shareDay && toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
+    }
+
+    function showErr(n, msg) { const e = $('err' + n); e.textContent = msg; e.classList.remove('hidden'); }
+    function clearErr(n) { if ($('err' + n)) $('err' + n).classList.add('hidden'); }
+
+    const enrollmentState = { submitted: false, reference: '', timestamp: '' };
+    const textValue = (value, fallback = '-') => {
+      const raw = value == null ? '' : String(value);
+      const text = raw.replace(/\s+/g, ' ').trim();
+      return text === '' ? fallback : text;
+    };
+    const fileName = (input) => input && input.files && input.files.length ? input.files[0].name : 'None uploaded';
+
+    function render() {
+      const isSubmitted = enrollmentState.submitted;
+      const corPreview = $('corPreview');
+      if (corPreview) corPreview.classList.toggle('hidden', !isSubmitted);
+
+      const steps = $('steps');
+      if (steps) steps.classList.toggle('hidden', isSubmitted);
+
+      document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('hidden', isSubmitted || i + 1 !== current));
+
+      if (!isSubmitted && steps) {
+        [...steps.children].forEach((d, i) => {
+          d.className = i + 1 === current ? 'active' : (i + 1 < current ? 'done' : '');
+        });
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function back(n) { current = n - 1; render(); }
+
+    function next(n) {
+      clearErr(n);
+      if (n === 1) {
+        const req = ['fname', 'lname', 'bdate', 'sex', 'email', 'contact', 'program', 'year'];
+        if (req.some(id => !$(id).value.trim())) return showErr(1, 'Pakikumpleto ang lahat ng may * na field.');
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('email').value)) return showErr(1, 'Mali ang email format.');
+        if (!/^09\d{9}$/.test($('contact').value.trim())) return showErr(1, 'Contact no. dapat 11 digits at nagsisimula sa 09.');
+        buildSubjects();
+      }
+      if (n === 2) {
+        if (selected.size !== programSections().filter(s => selected.has(s.id)).length) {
+          selected.clear();
+          buildSubjects();
+        }
+        if (selected.size === 0) return showErr(2, 'Pumili ng kahit isang subject.');
+        $('amountDue').textContent = 'Amount Due: ₱' + (totalUnits() * RATE_PER_UNIT).toLocaleString(undefined, {minimumFractionDigits: 2});
+      }
+      if (n === 3) {
+        if (!$('cor').files.length) return showErr(3, 'I-upload ang Certificate of Registration (COR).');
+      }
+      if (n === 4) {
+        if (!$('method').value) return showErr(4, 'Pumili ng paraan ng bayad.');
+        if ($('method').value !== 'Cash (sa Cashier)' && (!$('refno').value.trim() || !$('proof').files.length))
+          return showErr(4, 'Ilagay ang reference no. at i-upload ang proof of payment.');
+        buildSummary();
+      }
+      current = n + 1;
+      render();
+    }
+
+    function totalUnits() { return programSections().filter(s => selected.has(s.id)).reduce((a, s) => a + s.units, 0); }
+
+    function buildSubjects() {
+      const body = $('subjectBody');
+      body.innerHTML = '';
+      const program = $('program').value;
+      const sections = programSections();
+      $('subjectProgram').textContent = `Program: ${program}`;
+      sections.forEach(s => {
+        const tr = document.createElement('tr');
+        if (s.slots === 0) tr.className = 'full';
+        tr.innerHTML = `<td><input type="checkbox" ${s.slots === 0 ? 'disabled' : ''} ${selected.has(s.id) ? 'checked' : ''}></td>
+      <td>${s.code}</td><td>${s.name}</td><td>${s.units}</td>
+      <td>${s.days} ${s.start}-${s.end}</td>
+      <td class="${s.slots <= 5 ? 'slot-low' : ''}">${s.slots === 0 ? 'FULL' : s.slots}</td>`;
+        tr.querySelector('input').addEventListener('change', e => toggle(s, e.target, tr));
+        if (selected.has(s.id)) tr.classList.add('sel');
+        body.appendChild(tr);
+      });
+      $('totalUnits').textContent = 'Total: ' + totalUnits() + ' units';
+    }
+
+    function toggle(s, box, tr) {
+      clearErr(2);
+      if (box.checked) {
+        const clash = programSections().find(o => selected.has(o.id) && conflicts(o, s));
+        if (clash) { box.checked = false; return showErr(2, `Conflict ang ${s.code} sa ${clash.code} (parehong oras).`); }
+        selected.add(s.id); tr.classList.add('sel');
+      } else {
+        selected.delete(s.id); tr.classList.remove('sel');
+      }
+      $('totalUnits').textContent = 'Total: ' + totalUnits() + ' units';
+    }
+
+    function buildSummary() {
+      const subs = programSections().filter(s => selected.has(s.id));
+      const summary = $('summary');
+      summary.textContent = '';
+
+      const title = document.createElement('p');
+      const strongName = document.createElement('strong');
+      strongName.textContent = `${textValue($('fname').value)} ${textValue($('lname').value)}`;
+      title.appendChild(strongName);
+      title.appendChild(document.createTextNode(` — ${textValue($('program').value)}, Year ${textValue($('year').value)}`));
+
+      const meta = document.createElement('p');
+      meta.textContent = `${textValue($('email').value)} | ${textValue($('contact').value)}`;
+      summary.appendChild(title);
+      summary.appendChild(meta);
+
+      const table = document.createElement('table');
+      const head = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      ['Code', 'Subject', 'Units', 'Schedule'].forEach(label => {
+        const th = document.createElement('th');
+        th.textContent = label;
+        headRow.appendChild(th);
+      });
+      head.appendChild(headRow);
+      table.appendChild(head);
+
+      const body = document.createElement('tbody');
+      subs.forEach(s => {
+        const row = document.createElement('tr');
+        ['code', 'name', 'units', 'schedule'].forEach(key => {
+          const cell = document.createElement('td');
+          if (key === 'schedule') cell.textContent = `${s.days} ${s.start}-${s.end}`;
+          else if (key === 'units') cell.textContent = String(s.units);
+          else cell.textContent = s[key];
+          row.appendChild(cell);
+        });
+        body.appendChild(row);
+      });
+      table.appendChild(body);
+      summary.appendChild(table);
+
+      const total = document.createElement('div');
+      total.className = 'total';
+      total.textContent = `Total: ${totalUnits()} units — ₱${(totalUnits() * RATE_PER_UNIT).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+      summary.appendChild(total);
+
+      const payment = document.createElement('p');
+      payment.textContent = `Paraan ng bayad: ${textValue($('method').value)}`;
+      summary.appendChild(payment);
+    }
+
+    function buildCorDocument() {
+      const subs = programSections().filter(s => selected.has(s.id));
+      $('corReference').textContent = enrollmentState.reference;
+      $('corTimestamp').textContent = enrollmentState.timestamp;
+      $('corName').textContent = `${textValue($('fname').value)} ${textValue($('lname').value)}`;
+      $('corBirthdate').textContent = textValue($('bdate').value, 'Not provided');
+      $('corSex').textContent = textValue($('sex').value, 'Not provided');
+      $('corEmail').textContent = textValue($('email').value, 'Not provided');
+      $('corPhone').textContent = textValue($('contact').value, 'Not provided');
+      $('corAddress').textContent = textValue($('address').value, 'Not provided');
+      $('corProgram').textContent = textValue($('program').value, 'Not provided');
+      $('corYear').textContent = textValue($('year').value, 'Not provided');
+      $('corUnits').textContent = `${totalUnits()} units`;
+      $('corAmount').textContent = `₱${(totalUnits() * RATE_PER_UNIT).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+      $('corFile').textContent = fileName($('cor'));
+      $('corPaymentMethod').textContent = textValue($('method').value, 'Not provided');
+      $('corPaymentRef').textContent = $('method').value === 'Cash (sa Cashier)' ? 'Cash at cashier' : textValue($('refno').value, 'N/A');
+      $('corProofFile').textContent = fileName($('proof'));
+
+      const tbody = $('corSubjectsBody');
+      tbody.textContent = '';
+
+      if (!subs.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 4;
+        cell.textContent = 'No subjects selected.';
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+      }
+
+      subs.forEach(s => {
+        const row = document.createElement('tr');
+        const code = document.createElement('td');
+        code.textContent = s.code;
+        const name = document.createElement('td');
+        name.textContent = s.name;
+        const units = document.createElement('td');
+        units.textContent = String(s.units);
+        const schedule = document.createElement('td');
+        schedule.textContent = `${s.days} ${s.start}-${s.end}`;
+        row.append(code, name, units, schedule);
+        tbody.appendChild(row);
+      });
+    }
+
+    $('program').addEventListener('change', () => {
+      selected.clear();
+      $('totalUnits').textContent = 'Total: 0 units';
+      $('subjectBody').innerHTML = '';
+      $('subjectProgram').textContent = '';
+      $('amountDue').textContent = 'Amount Due: ₱0.00';
+      $('summary').textContent = '';
+      clearErr(1); clearErr(2); clearErr(4);
+      if (current === 2) buildSubjects();
+    });
+
+    function submitEnroll() {
+      if (enrollmentState.submitted) return;
+      const now = new Date();
+      const ref = 'CKC-' + now.toISOString().slice(0, 10).replace(/-/g, '') + '-' + String(now.getTime()).slice(-6);
+      enrollmentState.submitted = true;
+      enrollmentState.reference = ref;
+      enrollmentState.timestamp = now.toLocaleString('en-PH', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+      });
+      buildCorDocument();
+      render();
+    }
+
+    document.getElementById('printCorButton').addEventListener('click', () => window.print());
+    document.getElementById('returnPortalButton').addEventListener('click', () => {
+      enrollmentState.submitted = false;
+      enrollmentState.reference = '';
+      enrollmentState.timestamp = '';
+      current = 1;
+      render();
+      window.scrollTo(0, 0);
+    });
+
+    render();
+</script>
+</body>
+
+</html>

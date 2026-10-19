@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="fil">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Enrollment</title>
+  <style>
+    :root {
+      --blue: #174b63;
+      --bg: #f2f3f1;
+      --ok: #17634f;
+      --bad: #a63b32;
+      --brass: #b58a45;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      color: #111827;
+    }
+
+    header {
+      background: var(--blue);
+      color: #fff;
+      padding: 16px 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    main {
+      max-width: 820px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    main.cor-preview-mode {
+      max-width: 1160px;
+    }
+
+    .steps {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .steps div {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 13px;
+      background: #e5e7eb;
+      border-radius: 6px;
+    }
+
+    .steps div.active {
+      background: var(--blue);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .steps div.done {
+      background: #bfdbfe;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin: 12px 0 4px;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width:560px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        font-size: 11px;
+      }
+    }
+
+    .btns {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 0;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    tr.sel {
+      background: #dbeafe;
+    }
+
+    tr.full {
+      opacity: .5;
+    }
+
+    .msg {
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .msg.err {
+      background: #fee2e2;
+      color: var(--bad);
+    }
+
+    .msg.ok {
+      background: #dcfce7;
+      color: var(--ok);
+    }
+
+    .total {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: right;
+      margin-top: 12px;
+    }
+
+    .slot-low {
+      color: var(--bad);
+      font-weight: 600;
+    }
+
+    .subject-table-scroll {
+      max-width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .subject-table-scroll:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .subject-table {
+      min-width: 680px;
+    }
+
+    .table-scroll-hint {
+      margin: 0 0 8px;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .file-disclosure {
+      display: block;
+      margin-top: 4px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .cor-document {
+      background: #fffefa;
+      color: #0f172a;
+      border: 1px solid #d9d4c7;
+      border-top: 5px solid var(--blue);
+      border-radius: 4px;
+      box-shadow: 0 18px 40px rgba(22, 44, 55, 0.09);
+      padding: 30px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .cor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 22px;
+      border-bottom: 1px solid #d9d4c7;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+
+    .cor-brand {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      min-width: 0;
+    }
+
+    .cor-mark {
+      display: grid;
+      place-items: center;
+      flex: 0 0 58px;
+      width: 58px;
+      height: 58px;
+      border: 1px solid var(--brass);
+      border-bottom: 4px solid var(--brass);
+      color: var(--blue);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.06em;
+    }
+
+    .cor-brand-copy {
+      min-width: 0;
+    }
+
+    .cor-school {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #174b63;
+      margin-bottom: 6px;
+    }
+
+    .cor-eyebrow {
+      margin: 0 0 7px;
+      color: #785c2f;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .cor-header h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(23px, 2.5vw, 34px);
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+    }
+
+    .status-badge {
+      flex: 0 0 auto;
+      background: #edf4f1;
+      border: 1px solid #bed1c8;
+      border-left: 3px solid #28745e;
+      color: #215c4b;
+      border-radius: 2px;
+      padding: 9px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .cor-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .cor-meta>div {
+      background: #f8fbff;
+      border: 1px solid #dfe7f3;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .cor-meta span {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .cor-meta strong {
+      font-size: 15px;
+      word-break: break-word;
+    }
+
+    .cor-notice {
+      background: #fff7ed;
+      color: #9a4d00;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      border-radius: 8px;
+    }
+
+    .cor-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .cor-panel {
+      background: #fff;
+      border: 1px solid #dfe7f3;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .cor-panel h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+      color: var(--blue);
+    }
+
+    dl {
+      margin: 0;
+    }
+
+    dl>div {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    dl>div:last-child {
+      border-bottom: none;
+    }
+
+    dt {
+      font-weight: 700;
+      color: #475569;
+    }
+
+    dd {
+      margin: 0;
+      word-break: break-word;
+    }
+
+    .cor-table {
+      margin-top: 8px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cor-table th,
+    .cor-table td {
+      border-bottom: 1px solid #dfe7f3;
+      padding: 10px 8px;
+      vertical-align: top;
+    }
+
+    .cor-table th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .cor-enrolled-section {
+      margin-top: 18px;
+      border-top: 1px solid #d9d4c7;
+      padding-top: 18px;
+    }
+
+    .cor-enrolled-school {
+      margin: 0 0 4px;
+      color: #785c2f;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .cor-enrolled-section > h3 {
+      margin: 0;
+      color: #173e52;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 25px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .cor-enrolled-intro {
+      margin: 5px 0 14px;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .cor-record-meta {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 0.9fr);
+      gap: 10px;
+      margin: 0 0 14px;
+    }
+
+    .cor-record-meta > div {
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid #e2ded3;
+      border-top: 2px solid #c8b98f;
+      border-radius: 2px;
+      background: #fbfaf6;
+    }
+
+    .cor-record-meta dt {
+      margin-bottom: 4px;
+      font-size: 11px;
+      line-height: 1.35;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .cor-record-meta dd {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .cor-record-meta small {
+      display: block;
+      margin-top: 4px;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    .cor-enrolled-scroll {
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .cor-enrolled-table {
+      min-width: 0;
+      font-size: 12px;
+      table-layout: fixed;
+    }
+
+    .cor-enrolled-table th,
+    .cor-enrolled-table td {
+      padding: 9px 6px;
+      overflow-wrap: anywhere;
+    }
+
+    .cor-enrolled-table th {
+      color: #174b63;
+      background: #f2f2eb;
+      border-bottom: 2px solid #b58a45;
+    }
+
+    .cor-table-note {
+      margin: 8px 0 0;
+      color: #475569;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .cor-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .cor-record-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .cor-record-meta > div:nth-child(2) {
+        grid-column: 1 / -1;
+      }
+
+    }
+
+    @media (max-width: 680px) {
+
+      .cor-header,
+      .cor-meta,
+      .cor-grid {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .cor-header {
+        gap: 10px;
+        padding-bottom: 14px;
+      }
+
+      .cor-brand {
+        align-items: flex-start;
+        gap: 11px;
+      }
+
+      .cor-mark {
+        flex-basis: 48px;
+        width: 48px;
+        height: 48px;
+        font-size: 16px;
+      }
+
+      .cor-school {
+        font-size: 14px;
+      }
+
+      .status-badge {
+        white-space: normal;
+        justify-self: start;
+      }
+
+      .cor-record-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .cor-record-meta > div:nth-child(2) {
+        grid-column: auto;
+      }
+
+      .cor-document {
+        padding: 18px;
+      }
+
+      .cor-enrolled-table {
+        min-width: 640px;
+      }
+
+      dl>div {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+
+      .cor-actions {
+        justify-content: stretch;
+        flex-direction: column;
+      }
+
+      .cor-actions button {
+        width: 100%;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 12mm;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      body> :not(main),
+      main> :not(#corPreview),
+      .cor-actions {
+        display: none !important;
+      }
+
+      main {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      #corPreview:not(.hidden) {
+        display: block !important;
+      }
+
+      .cor-document {
+        max-width: none;
+        border: none;
+        border-top: 2px solid #174b63;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .cor-enrolled-section,
+      .cor-enrolled-section .cor-panel,
+      .cor-enrolled-table tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .cor-enrolled-scroll {
+        overflow: visible;
+      }
+
+      .cor-enrolled-table {
+        width: 100%;
+        min-width: 0;
+        table-layout: fixed;
+        font-size: 8px;
+      }
+
+      .cor-enrolled-table th,
+      .cor-enrolled-table td {
+        overflow-wrap: anywhere;
+        padding: 5px 3px;
+      }
+
+      .cor-enrolled-table th {
+        font-size: 7px;
+      }
+
+      .cor-enrolled-intro,
+      .cor-record-meta small,
+      .cor-table-note {
+        color: #334155 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🎓 Online Enrollment — SY 2026-2027, 1st Sem</h1>
+  </header>
+  <main>
+    <div class="steps" id="steps">
+      <div>1. Personal Info</div>
+      <div>2. Subjects</div>
+      <div>3. Requirements</div>
+      <div>4. Payment</div>
+      <div>5. Confirm</div>
+    </div>
+
+    <!-- STEP 1 -->
+    <section class="card step" id="step1">
+      <h2>Personal Information</h2>
+      <div class="row">
+        <div><label>First Name *</label><input id="fname"></div>
+        <div><label>Last Name *</label><input id="lname"></div>
+      </div>
+      <div class="row">
+        <div><label>Birthdate *</label><input type="date" id="bdate"></div>
+        <div><label>Sex *</label>
+          <select id="sex">
+            <option value="">Pumili</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label>Email *</label><input type="email" id="email"></div>
+        <div><label>Contact No. *</label><input id="contact" placeholder="09XXXXXXXXX"></div>
+      </div>
+      <label>Address</label><input id="address">
+      <div class="row">
+        <div><label>Program *</label>
+          <select id="program">
+            <option value="">Pumili</option>
+            <option>BSIT</option>
+            <option>BSED</option>
+            <option>BSN</option>
+            <option>BSA</option>
+            <option>BSCS</option>
+            <option>BSP</option>
+            <option>BSSW</option>
+            <option>BSBA</option>
+          </select>
+        </div>
+        <div><label>Year Level *</label>
+          <select id="year">
+            <option value="">Pumili</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+          </select>
+        </div>
+      </div>
+      <div class="msg err hidden" id="err1"></div>
+      <div class="btns"><span></span><button class="primary" onclick="next(1)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="card step hidden" id="step2">
+      <h2>Piliin ang Subjects</h2>
+      <p id="subjectProgram" aria-live="polite"></p>
+      <p>Sample first-semester subjects and section details only — this is not CKC’s official curriculum. Confirm the official curriculum with the Registrar.</p>
+      <p class="table-scroll-hint" id="subjectTableHint">On a narrow screen, scroll this table sideways to see schedules
+        and slot availability.</p>
+      <div class="subject-table-scroll" role="region" aria-label="Available subjects and remaining slots"
+        aria-describedby="subjectTableHint" tabindex="0">
+        <table class="subject-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Code</th>
+              <th>Subject</th>
+              <th>Units</th>
+              <th>Schedule</th>
+              <th>Slots</th>
+            </tr>
+          </thead>
+          <tbody id="subjectBody"></tbody>
+        </table>
+      </div>
+      <div class="total" id="totalUnits">Total: 0 units</div>
+      <div class="msg err hidden" id="err2"></div>
+      <div class="btns"><button class="secondary" onclick="back(2)">← Bumalik</button><button class="primary"
+          onclick="next(2)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="card step hidden" id="step3">
+      <h2>I-upload ang Requirements</h2>
+      <label>Certificate of Registration (COR) *</label><input type="file" id="cor" accept="image/*,.pdf" required>
+      <div class="msg err hidden" id="err3"></div>
+      <div class="btns"><button class="secondary" onclick="back(3)">← Bumalik</button><button class="primary"
+          onclick="next(3)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="card step hidden" id="step4">
+      <h2>Payment</h2>
+      <div class="total" id="amountDue" style="text-align:left">Amount Due: ₱0.00</div>
+      <label>Paraan ng Bayad *</label>
+      <select id="method">
+        <option value="">Pumili</option>
+        <option>GCash</option>
+        <option>Maya</option>
+        <option>Bank Transfer</option>
+        <option>Cash (sa Cashier)</option>
+      </select>
+      <label>Reference No.</label><input id="refno">
+      <label>Proof of Payment</label><input type="file" id="proof" accept="image/*,.pdf">
+      <div class="msg err hidden" id="err4"></div>
+      <div class="btns"><button class="secondary" onclick="back(4)">← Bumalik</button><button class="primary"
+          onclick="next(4)">Susunod →</button></div>
+    </section>
+
+    <!-- STEP 5 -->
+    <section class="card step hidden" id="step5">
+      <h2>Review at Confirm</h2>
+      <div id="summary"></div>
+      <div class="btns"><button class="secondary" onclick="back(5)">← Bumalik</button><button class="primary"
+          onclick="submitEnroll()">I-submit ang Enrollment</button></div>
+      <div class="msg ok hidden" id="done"></div>
+    </section>
+
+    <section id="corPreview" class="hidden" aria-live="polite">
+      <div class="cor-document">
+        <div class="cor-header">
+          <div class="cor-brand">
+            <div class="cor-mark" aria-hidden="true">CKC</div>
+            <div class="cor-brand-copy">
+              <div class="cor-school">Christ the King College of Calbayog City, Inc.</div>
+              <p class="cor-eyebrow">Student-generated preview · not an official record</p>
+              <h2>Enrollment Preview</h2>
+            </div>
+          </div>
+          <div class="status-badge">Not officially enrolled</div>
+        </div>
+
+        <div class="cor-meta">
+          <div><span>Local Preview Reference</span><strong id="corReference">-</strong></div>
+          <div><span>Confirmation Date</span><strong id="corTimestamp">-</strong></div>
+        </div>
+
+        <div class="cor-notice">Student-generated preview only — this standalone demo records a local confirmation and
+          does not send enrollment data to a backend. Registrar review begins only after official submission through the
+          school. This is not an official COR; only the Registrar can verify and issue one.</div>
+
+        <div class="cor-grid">
+          <div class="cor-panel">
+            <h3>Student Information</h3>
+            <dl>
+              <div>
+                <dt>Full Name</dt>
+                <dd id="corName">-</dd>
+              </div>
+              <div>
+                <dt>Birthdate</dt>
+                <dd id="corBirthdate">-</dd>
+              </div>
+              <div>
+                <dt>Sex</dt>
+                <dd id="corSex">-</dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd id="corEmail">-</dd>
+              </div>
+              <div>
+                <dt>Phone</dt>
+                <dd id="corPhone">-</dd>
+              </div>
+              <div>
+                <dt>Address</dt>
+                <dd id="corAddress">-</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="cor-panel">
+            <h3>Academic Information</h3>
+            <dl>
+              <div>
+                <dt>Program</dt>
+                <dd id="corProgram">-</dd>
+              </div>
+              <div>
+                <dt>Year Level</dt>
+                <dd id="corYear">-</dd>
+              </div>
+              <div>
+                <dt>Status</dt>
+                <dd id="corStatus">Awaiting Registrar verification — not officially enrolled</dd>
+              </div>
+              <div>
+                <dt>Total Units</dt>
+                <dd id="corUnits">-</dd>
+              </div>
+              <div>
+                <dt>Amount Due</dt>
+                <dd id="corAmount">-</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="cor-grid">
+          <div class="cor-panel">
+            <h3>Requirements</h3>
+            <dl>
+              <div>
+                <dt>COR Upload</dt>
+                <dd><span id="corFile">-</span><small class="file-disclosure">Selected uploads are represented by
+                    filenames only; files are not submitted or stored in this demo.</small></dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="cor-panel">
+            <h3>Payment</h3>
+            <dl>
+              <div>
+                <dt>Method</dt>
+                <dd id="corPaymentMethod">-</dd>
+              </div>
+              <div>
+                <dt>Reference</dt>
+                <dd id="corPaymentRef">-</dd>
+              </div>
+              <div>
+                <dt>Proof of Payment</dt>
+                <dd><span id="corProofFile">-</span><small class="file-disclosure">Selected uploads are represented by
+                    filenames only; files are not submitted or stored in this demo.</small></dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <section class="cor-enrolled-section" aria-labelledby="corEnrolledHeading">
+          <p class="cor-enrolled-school">Christ the King College of Calbayog City, Inc.</p>
+          <h3 id="corEnrolledHeading">Enrolled Subjects</h3>
+          <p class="cor-enrolled-intro" id="corSubjectMeta">Student-generated sample preview only; subject assignments shown here are not an official enrollment record.</p>
+
+          <dl class="cor-record-meta">
+            <div>
+              <dt>Student</dt>
+              <dd id="corOfficialStudentName">-</dd>
+              <small>Name to be confirmed when enrollment becomes official.</small>
+            </div>
+            <div>
+              <dt>Demo status</dt>
+              <dd id="corEnrolledStatus">Awaiting Registrar verification — not officially enrolled</dd>
+              <small>This local demo submission has not been sent to the Registrar.</small>
+            </div>
+            <div>
+              <dt>Period / Semester</dt>
+              <dd><span id="corPeriod">SY 2026-2027</span><small id="corSemester">1st Semester</small></dd>
+            </div>
+          </dl>
+
+          <div class="cor-enrolled-scroll" role="region" aria-label="Enrolled subjects table" tabindex="0">
+            <table class="cor-table cor-enrolled-table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Subject Code</th>
+                  <th>Units</th>
+                  <th>Schedule</th>
+                  <th>Room</th>
+                  <th>Instructor</th>
+                  <th>Section</th>
+                </tr>
+              </thead>
+              <tbody id="corSubjectsBody"></tbody>
+            </table>
+          </div>
+          <p class="cor-table-note">Room, instructor, and section are not provided by this sample data; TBA (sample) is shown and must not be treated as an official assignment.</p>
+        </section>
+
+        <div class="cor-actions">
+          <button class="primary" type="button" id="printCorButton">Print / Save as PDF</button>
+          <button class="secondary" type="button" id="returnPortalButton">Return to enrollment form</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ---- SAMPLE DATA (palitan ng galing sa database/API) ----
+    const RATE_PER_UNIT = 800;   // halimbawa lang
+    const sampleCurricula = {
+      BSIT: [
+        ['IT101|Introduction to Computing|3', 'IT102|Computer Programming 1|3', 'IT103|Discrete Mathematics|3', 'IT104|Computer Systems and Architecture|3', 'IT105|Web Systems and Technologies|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['IT201|Computer Programming 2|3', 'IT202|Data Structures and Algorithms|3', 'IT203|Database Management Systems 1|3', 'IT204|Object-Oriented Programming|3', 'IT205|Networking 1|3', 'IT206|Human-Computer Interaction|3', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['IT301|Information Assurance and Security 1|3', 'IT302|Systems Analysis and Design|3', 'IT303|Integrative Programming and Technologies|3', 'IT304|Web Systems and Technologies 2|3', 'IT305|IT Project Management|3', 'IT306|Networking 2|3', 'IT307|Quantitative Methods|3'],
+        ['IT401|Systems Integration and Architecture|3', 'IT402|IT Capstone Project 2|3', 'IT403|IT Elective: Cloud Computing|3', 'IT404|Practicum in Information Technology|6']
+      ],
+      BSED: [
+        ['EDU101|The Teaching Profession|3', 'EDU102|Child and Adolescent Development|3', 'EDU103|The Teacher and the Community|3', 'EDU104|Technology for Teaching and Learning 1|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'GE104|Readings in Philippine History|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['EDU201|The Learner-Centered Curriculum|3', 'EDU202|Facilitating Learner-Centered Teaching|3', 'EDU203|Assessment of Student Learning 1|3', 'EDU204|Technology for Teaching and Learning 2|3', 'EDU205|Building and Enhancing New Literacies|3', 'EDU206|Field Study 1: Observation of Teaching-Learning|3', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['EDU301|Assessment of Student Learning 2|3', 'EDU302|Curriculum Development|3', 'EDU303|Inclusive and Special Education|3', 'EDU304|Research in Education 1|3', 'EDU305|Field Study 2: Participation and Teaching Assistance|3', 'EDU306|Teaching Internship Seminar|3', 'EDU307|Language Learning and Teaching|3'],
+        ['EDU401|Strategies for Teaching Diverse Learners|3', 'EDU402|Research in Education 2|3', 'EDU403|Field Study 3: Teaching Internship|6', 'EDU404|Professional Education Integrative Seminar|3']
+      ],
+      BSN: [
+        ['NUR101|Theoretical Foundations in Nursing|3', 'NUR102|Anatomy and Physiology|4', 'NUR103|Biochemistry|3', 'NUR104|Fundamentals of Nursing Practice|4', 'NUR105|Health Assessment|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['NUR201|Community Health Nursing 1|4', 'NUR202|Pharmacology|3', 'NUR203|Nutrition and Diet Therapy|3', 'NUR204|Health Education|3', 'NUR205|Nursing Informatics|3', 'NUR206|Care of Mother, Child and Family|4', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['NUR301|Medical-Surgical Nursing 1|5', 'NUR302|Psychiatric Nursing|4', 'NUR303|Community Health Nursing 2|4', 'NUR304|Nursing Research 1|3', 'NUR305|Care of the Older Adult|3', 'NUR306|Nursing Leadership and Management 1|3', 'NUR307|Disaster Nursing|2'],
+        ['NUR401|Medical-Surgical Nursing 2|5', 'NUR402|Nursing Research 2|3', 'NUR403|Nursing Leadership and Management 2|3', 'NUR404|Related Learning Experience: Internship|6']
+      ],
+      BSA: [
+        ['ACC101|Financial Accounting and Reporting 1|3', 'ACC102|Conceptual Framework and Accounting Standards|3', 'ACC103|Business Mathematics|3', 'ACC104|Business Law and Obligations|3', 'ACC105|Fundamentals of Information Systems|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['ACC201|Financial Accounting and Reporting 2|3', 'ACC202|Intermediate Accounting 1|3', 'ACC203|Cost Accounting and Control|3', 'ACC204|Management Science|3', 'ACC205|Taxation|3', 'ACC206|Operations Management|3', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['ACC301|Intermediate Accounting 2|3', 'ACC302|Business Taxation|3', 'ACC303|Auditing and Assurance Principles|3', 'ACC304|Regulatory Framework for Business Transactions|3', 'ACC305|Financial Management|3', 'ACC306|Accounting Information Systems|3', 'ACC307|Accounting Research Methods|3'],
+        ['ACC401|Advanced Financial Accounting and Reporting|3', 'ACC402|Auditing and Assurance: Specialized Industries|3', 'ACC403|Strategic Cost Management|3', 'ACC404|Accounting Research and Capstone|3']
+      ],
+      BSCS: [
+        ['CSC101|Introduction to Computing|3', 'CSC102|Programming Logic and Design|3', 'CSC103|Discrete Structures 1|3', 'CSC104|Computer Organization|3', 'CSC105|Calculus for Computing|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['CSC201|Data Structures and Algorithms|3', 'CSC202|Object-Oriented Programming|3', 'CSC203|Discrete Structures 2|3', 'CSC204|Database Systems|3', 'CSC205|Computer Architecture|3', 'CSC206|Probability and Statistics for Computing|3', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['CSC301|Design and Analysis of Algorithms|3', 'CSC302|Operating Systems|3', 'CSC303|Automata and Language Theory|3', 'CSC304|Software Engineering|3', 'CSC305|Artificial Intelligence|3', 'CSC306|Computer Networks|3', 'CSC307|CS Research Methods|3'],
+        ['CSC401|Machine Learning Fundamentals|3', 'CSC402|Compiler Design|3', 'CSC403|CS Capstone Project 2|3', 'CSC404|Professional Internship in Computing|6']
+      ],
+      BSP: [
+        ['PSY101|Introduction to Psychology|3', 'PSY102|Psychological Statistics|3', 'PSY103|Developmental Psychology|3', 'PSY104|Theories of Personality|3', 'PSY105|Biological Psychology|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['PSY201|Abnormal Psychology|3', 'PSY202|Psychological Assessment|3', 'PSY203|Experimental Psychology|3', 'PSY204|Social Psychology|3', 'PSY205|Cognitive Psychology|3', 'PSY206|Research Methods in Psychology 1|3', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['PSY301|Psychological Assessment 2|3', 'PSY302|Industrial and Organizational Psychology|3', 'PSY303|Clinical Psychology|3', 'PSY304|Research Methods in Psychology 2|3', 'PSY305|Counseling Psychology|3', 'PSY306|Psychology of Learning|3', 'PSY307|Psychology Practicum Seminar|3'],
+        ['PSY401|Psychology Practicum|6', 'PSY402|Undergraduate Thesis|3', 'PSY403|Psychological Testing Seminar|3', 'PSY404|Ethics and Professional Issues in Psychology|3']
+      ],
+      BSSW: [
+        ['SWK101|Introduction to Social Work|3', 'SWK102|Social Welfare Policies and Programs|3', 'SWK103|Human Behavior and Social Environment 1|3', 'SWK104|Social Work Values and Ethics|3', 'SWK105|Social Work Communication Skills|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['SWK201|Social Work Practice with Individuals|3', 'SWK202|Social Casework|3', 'SWK203|Human Behavior and Social Environment 2|3', 'SWK204|Social Work Research 1|3', 'SWK205|Community Organization|3', 'SWK206|Social Welfare Administration|3', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['SWK301|Social Work Practice with Groups|3', 'SWK302|Social Work Practice with Communities|3', 'SWK303|Social Work Research 2|3', 'SWK304|Social Work and Mental Health|3', 'SWK305|Social Legislation|3', 'SWK306|Field Instruction 1|6', 'SWK307|Disaster Response and Social Work|3'],
+        ['SWK401|Social Work Practice with Families|3', 'SWK402|Social Work Program Planning|3', 'SWK403|Field Instruction 2|6', 'SWK404|Social Work Integrative Seminar|3']
+      ],
+      BSBA: [
+        ['MGT101|Principles of Management|3', 'MGT102|Business Communication|3', 'MGT103|Marketing Principles|3', 'MGT104|Business Mathematics|3', 'MGT105|Financial Accounting|3', 'GE101|Purposive Communication|3', 'GE102|Mathematics in the Modern World|3', 'GE103|Understanding the Self|3', 'NSTP101|National Service Training Program 1|3', 'PE101|Physical Activities Toward Health and Fitness 1|2'],
+        ['MGT201|Human Resource Management|3', 'MGT202|Business Finance|3', 'MGT203|Operations Management|3', 'MGT204|Business Statistics|3', 'MGT205|Business Research 1|3', 'MGT206|Entrepreneurship|3', 'GE201|Science Technology and Society|3', 'PE201|Physical Activities Toward Health and Fitness 3|2'],
+        ['MGT301|Strategic Management|3', 'MGT302|Management of Information Systems|3', 'MGT303|Business Research 2|3', 'MGT304|Organizational Behavior|3', 'MGT305|Quality Management|3', 'MGT306|Supply Chain Management|3', 'MGT307|Business Ethics and Social Responsibility|3'],
+        ['MGT401|Strategic Business Analysis|3', 'MGT402|Business Policy and Governance|3', 'MGT403|Management Internship|6', 'MGT404|Business Plan and Capstone|3']
+      ]
+    };
+    const sectionsByProgram = Object.fromEntries(Object.entries(sampleCurricula).map(([program, years]) => [
+      program,
+      years.map((courses, yearIndex) => courses.map((course, index) => {
+        let [code, name, units] = course.split('|');
+        if (/^(GE|NSTP|PE)/.test(code)) {
+          const coursePrefix = {BSIT: 'IT', BSED: 'ED', BSN: 'NU', BSA: 'AC', BSCS: 'CS', BSP: 'PS', BSSW: 'SW', BSBA: 'BA'}[program];
+          code = `${coursePrefix}-${code}`;
+        }
+        const startMinutes = 8 * 60 + (index % 5) * 90;
+        const formatTime = minutes => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+        return {
+          id: `${program}-Y${yearIndex + 1}-${code}`,
+          code,
+          name,
+          units: Number(units),
+          days: index < 5 ? 'MWF' : 'TTh',
+          start: formatTime(startMinutes),
+          end: formatTime(startMinutes + 60),
+          slots: 14 + ((index * 7 + yearIndex * 3) % 19)
+        };
+      }))
+    ]));
+    let current = 1;
+    const selected = new Set();
+
+    const $ = id => document.getElementById(id);
+    const programSections = () => sectionsByProgram[$('program').value]?.[Number($('year').value) - 1] || [];
+    const toMin = t => {const [h, m] = t.split(':').map(Number); return h * 60 + m;};
+    const dayList = d => d.replace('Th', 'R').split('');
+
+    function conflicts(a, b) {
+      const shareDay = dayList(a.days).some(x => dayList(b.days).includes(x));
+      return shareDay && toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
+    }
+
+    function showErr(n, msg) {const e = $('err' + n); e.textContent = msg; e.classList.remove('hidden');}
+    function clearErr(n) {if ($('err' + n)) $('err' + n).classList.add('hidden');}
+
+    const enrollmentState = {submitted: false, reference: '', timestamp: ''};
+    const textValue = (value, fallback = '-') => {
+      const raw = value == null ? '' : String(value);
+      const text = raw.replace(/\s+/g, ' ').trim();
+      return text === '' ? fallback : text;
+    };
+    const fileName = (input) => input && input.files && input.files.length ? input.files[0].name : 'None uploaded';
+
+    function render() {
+      const isSubmitted = enrollmentState.submitted;
+      const corPreview = $('corPreview');
+      if (corPreview) corPreview.classList.toggle('hidden', !isSubmitted);
+
+      const main = document.querySelector('main');
+      if (main) main.classList.toggle('cor-preview-mode', isSubmitted);
+
+      const steps = $('steps');
+      if (steps) steps.classList.toggle('hidden', isSubmitted);
+
+      document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('hidden', isSubmitted || i + 1 !== current));
+
+      if (!isSubmitted && steps) {
+        [...steps.children].forEach((d, i) => {
+          d.className = i + 1 === current ? 'active' : (i + 1 < current ? 'done' : '');
+        });
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function back(n) {current = n - 1; render();}
+
+    function next(n) {
+      clearErr(n);
+      if (n === 1) {
+        const req = ['fname', 'lname', 'bdate', 'sex', 'email', 'contact', 'program', 'year'];
+        if (req.some(id => !$(id).value.trim())) return showErr(1, 'Pakikumpleto ang lahat ng may * na field.');
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('email').value)) return showErr(1, 'Mali ang email format.');
+        if (!/^09\d{9}$/.test($('contact').value.trim())) return showErr(1, 'Contact no. dapat 11 digits at nagsisimula sa 09.');
+        buildSubjects();
+      }
+      if (n === 2) {
+        if (selected.size !== programSections().filter(s => selected.has(s.id)).length) {
+          selected.clear();
+          buildSubjects();
+        }
+        if (selected.size === 0) return showErr(2, 'Pumili ng kahit isang subject.');
+        $('amountDue').textContent = 'Amount Due: ₱' + (totalUnits() * RATE_PER_UNIT).toLocaleString(undefined, {minimumFractionDigits: 2});
+      }
+      if (n === 3) {
+        if (!$('cor').files.length) return showErr(3, 'I-upload ang Certificate of Registration (COR).');
+      }
+      if (n === 4) {
+        if (!$('method').value) return showErr(4, 'Pumili ng paraan ng bayad.');
+        if ($('method').value !== 'Cash (sa Cashier)' && (!$('refno').value.trim() || !$('proof').files.length))
+          return showErr(4, 'Ilagay ang reference no. at i-upload ang proof of payment.');
+        buildSummary();
+      }
+      current = n + 1;
+      render();
+    }
+
+    function totalUnits() {return programSections().filter(s => selected.has(s.id)).reduce((a, s) => a + s.units, 0);}
+
+    function buildSubjects() {
+      const body = $('subjectBody');
+      body.innerHTML = '';
+      const program = $('program').value;
+      const sections = programSections();
+      $('subjectProgram').textContent = `Program: ${program} · Year ${$('year').value} · 1st Semester · ${sections.length} sample subjects offered`;
+      sections.forEach(s => {
+        const tr = document.createElement('tr');
+        if (s.slots === 0) tr.className = 'full';
+        const checkboxCell = document.createElement('td');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.disabled = s.slots === 0;
+        checkbox.checked = selected.has(s.id);
+        checkbox.setAttribute('aria-label', `Select ${s.code} ${s.name}`);
+        checkbox.addEventListener('change', e => toggle(s, e.target, tr));
+        checkboxCell.appendChild(checkbox);
+        [checkboxCell, s.code, s.name, String(s.units), `${s.days} ${s.start}-${s.end}`, String(s.slots)].forEach((value, index) => {
+          const cell = index === 0 ? value : document.createElement('td');
+          if (index !== 0) cell.textContent = value;
+          if (index === 5 && s.slots <= 5) cell.classList.add('slot-low');
+          tr.appendChild(cell);
+        });
+        if (selected.has(s.id)) tr.classList.add('sel');
+        body.appendChild(tr);
+      });
+      $('totalUnits').textContent = 'Total: ' + totalUnits() + ' units';
+    }
+
+    function toggle(s, box, tr) {
+      clearErr(2);
+      if (box.checked) {
+        const clash = programSections().find(o => selected.has(o.id) && conflicts(o, s));
+        if (clash) {box.checked = false; return showErr(2, `Conflict ang ${s.code} sa ${clash.code} (parehong oras).`);}
+        selected.add(s.id); tr.classList.add('sel');
+      } else {
+        selected.delete(s.id); tr.classList.remove('sel');
+      }
+      $('totalUnits').textContent = 'Total: ' + totalUnits() + ' units';
+    }
+
+    function buildSummary() {
+      const subs = programSections().filter(s => selected.has(s.id));
+      const summary = $('summary');
+      summary.textContent = '';
+
+      const title = document.createElement('p');
+      const strongName = document.createElement('strong');
+      strongName.textContent = `${textValue($('fname').value)} ${textValue($('lname').value)}`;
+      title.appendChild(strongName);
+      title.appendChild(document.createTextNode(` — ${textValue($('program').value)}, Year ${textValue($('year').value)}, 1st Semester`));
+
+      const meta = document.createElement('p');
+      meta.textContent = `${selected.size} of ${programSections().length} sample subjects selected · ${textValue($('email').value)} | ${textValue($('contact').value)}`;
+      summary.appendChild(title);
+      summary.appendChild(meta);
+
+      const table = document.createElement('table');
+      const head = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      ['Code', 'Subject', 'Units', 'Schedule'].forEach(label => {
+        const th = document.createElement('th');
+        th.textContent = label;
+        headRow.appendChild(th);
+      });
+      head.appendChild(headRow);
+      table.appendChild(head);
+
+      const body = document.createElement('tbody');
+      subs.forEach(s => {
+        const row = document.createElement('tr');
+        ['code', 'name', 'units', 'schedule'].forEach(key => {
+          const cell = document.createElement('td');
+          if (key === 'schedule') cell.textContent = `${s.days} ${s.start}-${s.end}`;
+          else if (key === 'units') cell.textContent = String(s.units);
+          else cell.textContent = s[key];
+          row.appendChild(cell);
+        });
+        body.appendChild(row);
+      });
+      table.appendChild(body);
+      summary.appendChild(table);
+
+      const total = document.createElement('div');
+      total.className = 'total';
+      total.textContent = `Total: ${totalUnits()} units — ₱${(totalUnits() * RATE_PER_UNIT).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      summary.appendChild(total);
+
+      const payment = document.createElement('p');
+      payment.textContent = `Paraan ng bayad: ${textValue($('method').value)}`;
+      summary.appendChild(payment);
+    }
+
+    function buildCorDocument() {
+      const subs = programSections().filter(s => selected.has(s.id));
+      $('corReference').textContent = enrollmentState.reference;
+      $('corTimestamp').textContent = enrollmentState.timestamp;
+      $('corName').textContent = `${textValue($('fname').value)} ${textValue($('lname').value)}`;
+      $('corBirthdate').textContent = textValue($('bdate').value, 'Not provided');
+      $('corSex').textContent = textValue($('sex').value, 'Not provided');
+      $('corEmail').textContent = textValue($('email').value, 'Not provided');
+      $('corPhone').textContent = textValue($('contact').value, 'Not provided');
+      $('corAddress').textContent = textValue($('address').value, 'Not provided');
+      $('corProgram').textContent = textValue($('program').value, 'Not provided');
+      $('corYear').textContent = textValue($('year').value, 'Not provided');
+      $('corOfficialStudentName').textContent = `${textValue($('fname').value)} ${textValue($('lname').value)}`;
+      $('corSubjectMeta').textContent = `Program: ${textValue($('program').value)} · Year ${textValue($('year').value)} · 1st Semester · ${selected.size} subjects selected (${programSections().length} sample offerings). Student-generated sample preview only; this is not CKC’s official curriculum or an official enrollment record.`;
+      $('corUnits').textContent = `${totalUnits()} units`;
+      $('corAmount').textContent = `₱${(totalUnits() * RATE_PER_UNIT).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      $('corFile').textContent = fileName($('cor'));
+      $('corPaymentMethod').textContent = textValue($('method').value, 'Not provided');
+      $('corPaymentRef').textContent = $('method').value === 'Cash (sa Cashier)' ? 'Cash at cashier' : textValue($('refno').value, 'N/A');
+      $('corProofFile').textContent = fileName($('proof'));
+
+      const tbody = $('corSubjectsBody');
+      tbody.textContent = '';
+
+      if (!subs.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 7;
+        cell.textContent = 'No subjects selected.';
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+      }
+
+      subs.forEach(s => {
+        const row = document.createElement('tr');
+        const classNumber = document.createElement('td');
+        classNumber.textContent = String(subs.indexOf(s) + 1);
+        const code = document.createElement('td');
+        code.textContent = s.code;
+        const units = document.createElement('td');
+        units.textContent = String(s.units);
+        const schedule = document.createElement('td');
+        schedule.textContent = `${s.days} ${s.start}-${s.end}`;
+        const room = document.createElement('td');
+        room.textContent = 'TBA (sample)';
+        const instructor = document.createElement('td');
+        instructor.textContent = 'TBA (sample)';
+        const section = document.createElement('td');
+        section.textContent = 'TBA (sample)';
+        row.append(classNumber, code, units, schedule, room, instructor, section);
+        tbody.appendChild(row);
+      });
+    }
+
+    function resetSubjectSelection() {
+      selected.clear();
+      $('totalUnits').textContent = 'Total: 0 units';
+      $('subjectBody').innerHTML = '';
+      $('subjectProgram').textContent = '';
+      $('amountDue').textContent = 'Amount Due: ₱0.00';
+      $('summary').textContent = '';
+      $('done').classList.add('hidden');
+      clearErr(1); clearErr(2); clearErr(4);
+      if (current === 2) buildSubjects();
+    }
+
+    $('program').addEventListener('change', resetSubjectSelection);
+    $('year').addEventListener('change', resetSubjectSelection);
+
+    function submitEnroll() {
+      if (enrollmentState.submitted) return;
+      const now = new Date();
+      const ref = 'CKC-' + now.toISOString().slice(0, 10).replace(/-/g, '') + '-' + String(now.getTime()).slice(-6);
+      enrollmentState.submitted = true;
+      enrollmentState.reference = ref;
+      enrollmentState.timestamp = now.toLocaleString('en-PH', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+      });
+      buildCorDocument();
+      render();
+    }
+
+    document.getElementById('printCorButton').addEventListener('click', () => window.print());
+    document.getElementById('returnPortalButton').addEventListener('click', () => {
+      enrollmentState.submitted = false;
+      enrollmentState.reference = '';
+      enrollmentState.timestamp = '';
+      current = 1;
+      render();
+      window.scrollTo(0, 0);
+    });
+
+    render();
+  </script>
+</body>
+
+</html>
